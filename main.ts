@@ -18,7 +18,7 @@
 // container the program writes to /output. Serve the app with `node serve.ts`,
 // then open http://localhost:8080.
 
-import { cpSync, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
@@ -33,6 +33,11 @@ if (!existsSync(indexHtml) || !statSync(indexHtml).isFile()) {
 }
 
 mkdirSync(out, { recursive: true });
+// Clear any previous copy first: the program runs twice and both runs must write
+// the same bytes, so a file deleted from app/ or screenshots/ since the last run
+// must not survive in /output as a stale copy.
+rmSync(join(out, 'app'), { recursive: true, force: true });
+rmSync(join(out, 'screenshots'), { recursive: true, force: true });
 cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
 mkdirSync(join(out, 'screenshots'), { recursive: true });
 if (existsSync(join(here, 'screenshots'))) {
